@@ -16,11 +16,135 @@
         transition: box-shadow 0.3s ease;
         cursor: pointer;
       }
-      
-      
-     
-      
-     
+
+      /* Modern styling improvements */
+      body {
+        background: linear-gradient(135deg, #f0e68c, #ffa500);
+        font-family: 'Arial', sans-serif;
+      }
+      .navbar {
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      .navbar-brand {
+        font-weight: bold;
+        color: #ff8c00 !important;
+      }
+      .nav-link:hover {
+        color: #ff8c00 !important;
+        transition: color 0.3s ease;
+      }
+
+      /* Chat trigger button */
+      #chat-trigger {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: #ff8c00;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+      #chat-trigger:hover {
+        background: #e67e00;
+        transform: scale(1.1);
+      }
+
+      /* Chat modal */
+      #chat-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1001;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .chat-box {
+        position: absolute;
+        bottom: 80px;
+        right: 20px;
+        width: 350px;
+        max-height: 500px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .chat-header {
+        background: #ff8c00;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        position: relative;
+      }
+      .chat-header #close-chat {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      .chat-body {
+        padding: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .chat-hamster {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .chat-response {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        animation: typing 1s ease-in-out;
+      }
+      @keyframes typing {
+        0% { opacity: 0; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+      }
+      .chat-footer {
+        padding: 15px;
+        border-top: 1px solid #eee;
+      }
+      .lang-buttons {
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .chat-box {
+          width: 90%;
+          right: 5%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -98,8 +222,41 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script type="module" src="three.js"></script>
+    <!-- Chat trigger button -->
+    <button id="chat-trigger">💬</button>
+
+    <!-- Chat modal -->
+    <div id="chat-modal">
+      <div class="chat-box">
+        <div class="chat-header">Chat with Hamster Chef<button id="close-chat">&times;</button></div>
+        <div class="chat-body">
+          <div class="chat-hamster">
+            <div id="chat-hamster-container"></div>
+          </div>
+          <div id="chat-response-display"></div>
+        </div>
+        <div class="chat-footer">
+          <div class="lang-buttons">
+            <div class="btn-group" role="group" aria-label="Select modal language">
+              <button type="button" class="btn btn-primary" id="modal-lang-hindi">Hindi</button>
+              <button type="button" class="btn btn-secondary active" id="modal-lang-english">English</button>
+              <button type="button" class="btn btn-success" id="modal-lang-haryanvi">Haryanvi</button>
+            </div>
+          </div>
+          <form id="modal-chat-form">
+            <input type="text" class="form-control" placeholder="Ask me anything..." required>
+            <button type="submit" class="btn btn-primary mt-2">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script type="module" src="three.js"></script>
     <script>
       let selectedLanguage = 'English';
+      let modalSelectedLanguage = 'English';
 
       const hamsterImg = document.getElementById('hamster-img');
       hamsterImg.addEventListener('click', () => {
@@ -107,7 +264,30 @@
         setTimeout(() => hamsterImg.classList.remove('glow'), 1000);
       });
 
-      // Language button event listeners
+      // Chat modal functionality
+      const chatTrigger = document.getElementById('chat-trigger');
+      const chatModal = document.getElementById('chat-modal');
+      const closeChat = document.getElementById('close-chat');
+
+      chatTrigger.addEventListener('click', () => {
+        chatModal.style.display = 'block';
+        // Initialize 3D hamster in modal if not already
+        if (!document.getElementById('chat-hamster-container').hasChildNodes()) {
+          initChatHamster();
+        }
+      });
+
+      closeChat.addEventListener('click', () => {
+        chatModal.style.display = 'none';
+      });
+
+      chatModal.addEventListener('click', (e) => {
+        if (e.target === chatModal) {
+          chatModal.style.display = 'none';
+        }
+      });
+
+      // Language button event listeners for main page
       document.getElementById('lang-hindi').addEventListener('click', () => {
         selectedLanguage = 'Hindi';
         updateActiveLanguage('lang-hindi');
@@ -121,11 +301,31 @@
         updateActiveLanguage('lang-haryanvi');
       });
 
+      // Language button event listeners for modal
+      document.getElementById('modal-lang-hindi').addEventListener('click', () => {
+        modalSelectedLanguage = 'Hindi';
+        updateModalActiveLanguage('modal-lang-hindi');
+      });
+      document.getElementById('modal-lang-english').addEventListener('click', () => {
+        modalSelectedLanguage = 'English';
+        updateModalActiveLanguage('modal-lang-english');
+      });
+      document.getElementById('modal-lang-haryanvi').addEventListener('click', () => {
+        modalSelectedLanguage = 'Haryanvi';
+        updateModalActiveLanguage('modal-lang-haryanvi');
+      });
+
       function updateActiveLanguage(activeId) {
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#lang-hindi, #lang-english, #lang-haryanvi').forEach(btn => btn.classList.remove('active'));
         document.getElementById(activeId).classList.add('active');
       }
 
+      function updateModalActiveLanguage(activeId) {
+        document.querySelectorAll('#modal-lang-hindi, #modal-lang-english, #modal-lang-haryanvi').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(activeId).classList.add('active');
+      }
+
+      // Main page chat form
       document.getElementById('chat-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = e.target.querySelector('input');
@@ -155,6 +355,112 @@
           setTimeout(() => hamsterImg.classList.remove('listening'), 500);
         }
       });
+
+      // Modal chat form
+      document.getElementById('modal-chat-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = e.target.querySelector('input');
+        const question = input.value.trim();
+        if (!question) return;
+        input.value = '';
+        // Trigger hamster animation
+        if (window.speak) window.speak(question);
+        try {
+          const res = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, language: modalSelectedLanguage })
+          });
+          const data = await res.json();
+          // Display response in modal
+          const responseDiv = document.getElementById('chat-response-display');
+          const newResponse = document.createElement('div');
+          newResponse.className = 'chat-response';
+          newResponse.textContent = data.answer;
+          responseDiv.appendChild(newResponse);
+          responseDiv.scrollTop = responseDiv.scrollHeight;
+          // Trigger speak animation
+          if (window.speak) window.speak(data.answer);
+        } catch (err) {
+          console.error('Error:', err);
+          const responseDiv = document.getElementById('chat-response-display');
+          const errorResponse = document.createElement('div');
+          errorResponse.className = 'chat-response';
+          errorResponse.textContent = 'Error sending message';
+          responseDiv.appendChild(errorResponse);
+        }
+      });
+
+      // Function to initialize 3D hamster in chat modal
+      function initChatHamster() {
+        const container = document.getElementById('chat-hamster-container');
+        if (!container) return;
+
+        // Simplified version for modal - smaller size
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0e68c);
+
+        const camera = new THREE.PerspectiveCamera(60, 200 / 150, 0.1, 1000);
+        camera.position.set(0, 0, 3);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(200, 150);
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Simple hamster body
+        const bodyGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        scene.add(body);
+
+        // Head
+        const headGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+        const head = new THREE.Mesh(headGeometry, bodyMaterial);
+        head.position.y = 0.6;
+        scene.add(head);
+
+        // Eyes
+        const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        leftEye.position.set(-0.15, 0.65, 0.35);
+        scene.add(leftEye);
+        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        rightEye.position.set(0.15, 0.65, 0.35);
+        scene.add(rightEye);
+
+        // Pupils
+        const pupilGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const pupilMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        leftPupil.position.set(-0.15, 0.65, 0.4);
+        scene.add(leftPupil);
+        const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        rightPupil.position.set(0.15, 0.65, 0.4);
+        scene.add(rightPupil);
+
+        // Chef Hat
+        const hatGeometry = new THREE.ConeGeometry(0.3, 0.6, 8);
+        const hatMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const hat = new THREE.Mesh(hatGeometry, hatMaterial);
+        hat.position.y = 1.1;
+        scene.add(hat);
+
+        // Animation loop for modal hamster
+        function animateModal() {
+          requestAnimationFrame(animateModal);
+          body.rotation.y += 0.01;
+          renderer.render(scene, camera);
+        }
+        animateModal();
+      }
     </script>
   </body>
 </html>
