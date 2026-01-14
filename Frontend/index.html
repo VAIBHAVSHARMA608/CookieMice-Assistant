@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cook with Mice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+      }
+      .hamster-img {
+        animation: bounce 2s infinite;
+        transition: box-shadow 0.3s ease;
+        cursor: pointer;
+      }
+      
+      
+     
+      
+     
+    </style>
+  </head>
+  <body>
+   <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Cook with Mice</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#recipes">Recipes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#ingredients">Ingredients</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tips">Tips</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#contact">Contact</a>
+        </li>
+      </ul>
+      <form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search recipes..." aria-label="Search"/>
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<nav class="navbar bg-body-tertiary">
+
+</nav>
+
+<div id="hamster-container" style="display: flex; justify-content: center; align-items: center; height: 300px; margin: 20px 0;">
+  <img id="hamster-img" class="hamster-img" src="/assets/Models/image.png" alt="Cute Hamster with Chef Hat" style="max-width: 80%; max-height: 80%;">
+</div>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+      <form id="chat-form" class="d-flex" role="search" style="align-items: center; margin-top: 20px; margin-bottom:20px;">
+        <input
+          class="form-control me-2"
+          type="search"
+          placeholder="What is on your mind today?"
+          aria-label="Search"
+          style="flex-grow:1; height:50px; border-radius:40px;"
+        />
+        <button
+          class="btn btn-outline-success"
+          type="submit"
+          style="height:50px; margin-left:10px; border-radius:40px;"
+        >
+          Chat
+        </button>
+      </form>
+      <div id="response-display" class="mt-3 p-3 bg-light rounded" style="display: none;"></div>
+    </div>
+  </div>
+</div>
+<div class="langbut-wrapper text-center my-3">
+  <div class="btn-group" role="group" aria-label="Select language">
+    <button type="button" class="btn btn-primary" id="lang-hindi">Hindi</button>
+    <button type="button" class="btn btn-secondary active" id="lang-english">English</button>
+    <button type="button" class="btn btn-success" id="lang-haryanvi">Haryanvi</button>
+  </div>
+</div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script>
+      let selectedLanguage = 'English';
+
+      const hamsterImg = document.getElementById('hamster-img');
+      hamsterImg.addEventListener('click', () => {
+        hamsterImg.classList.add('glow');
+        setTimeout(() => hamsterImg.classList.remove('glow'), 1000);
+      });
+
+      // Language button event listeners
+      document.getElementById('lang-hindi').addEventListener('click', () => {
+        selectedLanguage = 'Hindi';
+        updateActiveLanguage('lang-hindi');
+      });
+      document.getElementById('lang-english').addEventListener('click', () => {
+        selectedLanguage = 'English';
+        updateActiveLanguage('lang-english');
+      });
+      document.getElementById('lang-haryanvi').addEventListener('click', () => {
+        selectedLanguage = 'Haryanvi';
+        updateActiveLanguage('lang-haryanvi');
+      });
+
+      function updateActiveLanguage(activeId) {
+        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(activeId).classList.add('active');
+      }
+
+      document.getElementById('chat-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = e.target.querySelector('input');
+        const question = input.value.trim();
+        if (!question) return;
+        input.value = '';
+        // Add listening glow
+        hamsterImg.classList.add('listening');
+        try {
+          const res = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, language: selectedLanguage })
+          });
+          const data = await res.json();
+          // Display response in div
+          const responseDiv = document.getElementById('response-display');
+          responseDiv.textContent = data.answer;
+          responseDiv.style.display = 'block';
+        } catch (err) {
+          console.error('Error:', err);
+          const responseDiv = document.getElementById('response-display');
+          responseDiv.textContent = 'Error sending message';
+          responseDiv.style.display = 'block';
+        } finally {
+          // Remove listening glow after response
+          setTimeout(() => hamsterImg.classList.remove('listening'), 500);
+        }
+      });
+    </script>
+  </body>
+</html>
